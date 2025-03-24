@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>chat</title>
+    <title>Chat</title>
 </head>
 <body>
     <style>
@@ -20,7 +20,7 @@
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: 100vh;
         }
         .header {
             background-color: #4CAF50;
@@ -43,8 +43,9 @@
             background-color: #e5e5e5;
             padding: 10px;
             border-radius: 5px;
-            max-width: 80%;
+            max-width: 70%;
             align-self: flex-start;
+            word-break: break-word;
         }
         .user-message {
             background-color: #4CAF50;
@@ -58,7 +59,7 @@
             border-top: 1px solid #ddd;
         }
         .input-box {
-            width: 100%;
+            flex: 1;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -77,79 +78,79 @@
         .send-button:hover {
             background-color: #45a049;
         }
-        
     </style>
     
     <div class="chat-container">
         <div class="header">ChatAHH</div>
-        <div class="chat-box" id="chat-box">
-            <!-- Messages will appear here -->
-        </div>
+        <div class="chat-box" id="chat-box"></div>
         <div class="input-container">
             <input type="text" id="message-input" class="input-box" placeholder="Type your message...">
             <button class="send-button" onclick="sendMessage()">Send</button>
-            
-            
         </div>
     </div>
+
     <script type="module">
-       
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js";
-    
-        
+
         const firebaseConfig = {
-          apiKey: "AIzaSyDHwQFl7mtWEFnPOQyu0UBbktcEXLnPa3A",
-          authDomain: "apppp-e6d3b.firebaseapp.com",
-          databaseURL: "https://apppp-e6d3b-default-rtdb.firebaseio.com",
-          projectId: "apppp-e6d3b",
-          storageBucket: "apppp-e6d3b.firebasestorage.app",
-          messagingSenderId: "606593845407",
-          appId: "1:606593845407:web:221d65637d40c3d94a7aaa"
+            apiKey: "AIzaSyDHwQFl7mtWEFnPOQyu0UBbktcEXLnPa3A",
+            authDomain: "apppp-e6d3b.firebaseapp.com",
+            databaseURL: "https://apppp-e6d3b-default-rtdb.firebaseio.com",
+            projectId: "apppp-e6d3b",
+            storageBucket: "apppp-e6d3b.firebasestorage.app",
+            messagingSenderId: "606593845407",
+            appId: "1:606593845407:web:221d65637d40c3d94a7aaa"
         };
-    
-        
+
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        
 
+        if (!localStorage.getItem('userId')) {
+            localStorage.setItem('userId', 'user-' + Math.random().toString(36).substring(2, 9));
+        }
+        const userId = localStorage.getItem('userId');
 
         function sendMessage() {
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
 
             if (message !== '') {
-                
                 push(ref(database, 'messages'), {
                     text: message,
-                    timestamp: serverTimestamp()
-
+                    timestamp: serverTimestamp(),
+                    sender: userId
                 });
 
-                messageInput.value = ''; 
+                messageInput.value = '';
             }
         }
 
-       
         onChildAdded(ref(database, 'messages'), (snapshot) => {
             const data = snapshot.val();
             const chatbox = document.getElementById('chat-box');
             const message = document.createElement('div');
+
             message.classList.add('chat-message');
+            if (data.sender === userId) {
+                message.classList.add('user-message'); // لون مختلف للمرسل
+            }
+
             message.textContent = data.text;
             chatbox.appendChild(message);
+
+            // جعل آخر رسالة تظهر تلقائيًا
             chatbox.scrollTop = chatbox.scrollHeight;
         });
 
-        
         document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
 
-        
         window.sendMessage = sendMessage;
     </script>
 </body>
 </html>
+
